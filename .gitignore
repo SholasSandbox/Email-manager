@@ -1,8 +1,8 @@
+email-manager-secrets.json
+gmail_credentials.json
+gmail_token.pickle
+outlook_credentials.json
+outlook_token_cache.json
 venv/
 __pycache__/
-gmail_credentials.json
-outlook_token_cache.json
-outlook_credentials.json
-gmail_token.pickle
-email-manager-secrets.json
 
