@@ -1,0 +1,16 @@
+# Google API dependencies
+google-auth==2.25.2
+google-auth-oauthlib==1.2.0
+google-auth-httplib2==0.2.0
+google-api-python-client==2.111.0
+
+# Microsoft Graph API dependencies
+msal==1.26.0
+requests==2.31.0
+
+# Utilities
+python-dateutil==2.8.2
+
+# Flask API server for browser extension
+flask==3.0.0
+flask-cors==4.0.0
