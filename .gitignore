@@ -1,6 +1,7 @@
 email-manager-secrets.json
 gmail_credentials.json
 gmail_token.pickle
+gmail_readonly_token.pickle
 outlook_credentials.json
 outlook_token_cache.json
 venv/
