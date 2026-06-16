@@ -2,15 +2,117 @@
 
 This guide walks you through setting up the Email Management Utility step by step.
 
-## Prerequisites
+## Recommended Current Setup: Gmail Dry-Run CLI
+
+If you are using the current `email_core.run_daily_review` Gmail path, stop after this section unless you also need the older live-management workflows later in this guide.
+
+The current Gmail dry-run CLI is intentionally limited:
+
+- read-only Gmail metadata access only
+- no label changes
+- no archive/trash/delete/send
+- no attachment downloads
+- no full-body retrieval
+- no calendar creation
+- no mailbox mutation
+
+It writes local outputs only:
+
+- `reports/daily-review.md`
+- `runs/audit-log.jsonl`
+
+### Minimal Read-Only Setup
+
+1. Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+Required Google packages already listed in `requirements.txt`:
+
+- `google-auth`
+- `google-auth-oauthlib`
+- `google-api-python-client`
+
+2. In Google Cloud Console, create a Desktop app OAuth client for the Gmail API.
+
+3. Download the OAuth client JSON and save it in the project root as:
+
+```text
+gmail_credentials.json
+```
+
+4. Run the Gmail dry-run CLI:
+
+```bash
+python3 -m email_core.run_daily_review \
+  --provider gmail \
+  --policy fixtures/sample_policy.json \
+  --report reports/daily-review.md \
+  --audit runs/audit-log.jsonl \
+  --max-results 20 \
+  --user-email your-email@example.com
+```
+
+Optional flags:
+
+- `--query "label:inbox"` to narrow the review set
+- `--user-id me` to use the default Gmail account
+
+5. On first run, complete the browser OAuth flow. The CLI saves a dedicated read-only token as:
+
+```text
+gmail_readonly_token.pickle
+```
+
+That token file is ignored by git.
+
+### Important Scope Note
+
+For the current dry-run CLI, you only need Gmail API access with the read-only scope:
+
+```text
+https://www.googleapis.com/auth/gmail.readonly
+```
+
+You do not need calendar scopes for this Phase 2B/2C path.
+
+### Current Gmail Dry-Run Troubleshooting
+
+If the CLI says Google client libraries are missing:
+
+```bash
+pip install -r requirements.txt
+```
+
+If the CLI says `gmail_credentials.json` is missing:
+
+- create a Google Cloud Desktop app OAuth client
+- download the credentials JSON
+- save it in the project root as `gmail_credentials.json`
+
+If the browser flow succeeds, the CLI saves:
+
+```text
+gmail_readonly_token.pickle
+```
+
+The current Gmail CLI stays read-only after authentication and still only writes local report/audit output.
+
+## Archived Legacy Live Workflow
+
+The detailed Gmail and Outlook sections below describe older, broader workflows in this repository. They may request wider permissions than the current Gmail dry-run CLI and are not required for the read-only Phase 2B/2C path above.
+
+### Legacy Workflow Prerequisites
 
 - Python 3.7 or higher
 - pip (Python package installer)
 - A Gmail account and/or Outlook/Microsoft 365 account
 
-## Step-by-Step Setup
+### Legacy Workflow Setup
 
-### 1. Install Dependencies
+#### 1. Install Dependencies
 
 ```bash
 pip install -r requirements.txt
@@ -23,9 +125,9 @@ Successfully installed google-auth-2.25.2 google-auth-oauthlib-1.2.0 ...
 
 ---
 
-## Gmail Setup (Detailed)
+### Legacy Gmail Setup (Detailed)
 
-### Step 1: Create Google Cloud Project
+#### Step 1: Create Google Cloud Project
 
 1. **Go to Google Cloud Console**
    - Visit: https://console.cloud.google.com
@@ -41,7 +143,7 @@ Successfully installed google-auth-2.25.2 google-auth-oauthlib-1.2.0 ...
 3. **Select Your Project**
    - Use the project dropdown to select your new project
 
-### Step 2: Enable Required APIs
+#### Step 2: Enable Required APIs
 
 1. **Navigate to APIs**
    - Click hamburger menu (☰) → "APIs & Services" → "Library"
@@ -58,7 +160,7 @@ Successfully installed google-auth-2.25.2 google-auth-oauthlib-1.2.0 ...
    - Click on it
    - Click "Enable"
 
-### Step 3: Configure OAuth Consent Screen
+#### Step 3: Configure OAuth Consent Screen
 
 1. **Go to OAuth Consent**
    - Click hamburger menu → "APIs & Services" → "OAuth consent screen"
@@ -85,7 +187,7 @@ Successfully installed google-auth-2.25.2 google-auth-oauthlib-1.2.0 ...
 6. **Summary** (Step 4)
    - Review and click "Back to Dashboard"
 
-### Step 4: Create OAuth Credentials
+#### Step 4: Create OAuth Credentials
 
 1. **Go to Credentials**
    - Click hamburger menu → "APIs & Services" → "Credentials"
@@ -123,7 +225,7 @@ Successfully installed google-auth-2.25.2 google-auth-oauthlib-1.2.0 ...
 }
 ```
 
-### Step 5: Test Gmail Authentication
+#### Step 5: Test Gmail Authentication
 
 ```bash
 python email_manager.py --provider gmail --setup-only
@@ -148,9 +250,9 @@ python email_manager.py --provider gmail --setup-only
 
 ---
 
-## Outlook Setup (Detailed)
+### Legacy Outlook Setup (Detailed)
 
-### Step 1: Register Azure AD Application
+#### Step 1: Register Azure AD Application
 
 1. **Go to Azure Portal**
    - Visit: https://portal.azure.com
@@ -176,7 +278,7 @@ python email_manager.py --provider gmail --setup-only
    - Example: `12345678-1234-1234-1234-123456789abc`
    - Save this - you'll need it!
 
-### Step 2: Configure Authentication
+#### Step 2: Configure Authentication
 
 1. **Go to Authentication**
    - In left sidebar: Click "Authentication"
@@ -193,7 +295,7 @@ python email_manager.py --provider gmail --setup-only
    - Allow public client flows: "Yes"
    - Click "Save" at top
 
-### Step 3: Add API Permissions
+#### Step 3: Add API Permissions
 
 1. **Go to API Permissions**
    - In left sidebar: Click "API permissions"
@@ -226,7 +328,7 @@ python email_manager.py --provider gmail --setup-only
   - Calendars.ReadWrite (Delegated)
   - Mail.ReadWrite (Delegated)
 
-### Step 4: Create Credentials File
+#### Step 4: Create Credentials File
 
 1. **Create outlook_credentials.json**
    ```bash
@@ -247,7 +349,7 @@ python email_manager.py --provider gmail --setup-only
 }
 ```
 
-### Step 5: Test Outlook Authentication
+#### Step 5: Test Outlook Authentication
 
 ```bash
 python email_manager.py --provider outlook --setup-only
@@ -265,9 +367,9 @@ python email_manager.py --provider outlook --setup-only
 
 ---
 
-## Verification
+### Legacy Workflow Verification
 
-### Check Authentication Works
+#### Check Authentication Works
 
 ```bash
 # Test both providers
@@ -285,7 +387,7 @@ INFO - Outlook authentication successful
 INFO - Setup complete. Run without --setup-only to process emails.
 ```
 
-### Test in Dry Run Mode
+#### Test in Dry Run Mode
 
 ```bash
 # Safe test - no emails will be modified
@@ -296,43 +398,43 @@ This will show what emails would be processed without actually changing anything
 
 ---
 
-## Common Issues and Solutions
+### Legacy Workflow Issues and Solutions
 
-### Issue: "gmail_credentials.json not found"
+#### Issue: "gmail_credentials.json not found"
 
 **Solution:**
 - Make sure you downloaded the OAuth credentials from Google Cloud Console
 - Rename the file to exactly `gmail_credentials.json`
 - Place it in the same directory as the Python scripts
 
-### Issue: "Google hasn't verified this app"
+#### Issue: "Google hasn't verified this app"
 
 **Solution:**
 - This is normal for personal projects
 - Click "Advanced" → "Go to Email Manager (unsafe)"
 - Your app is safe - Google just hasn't reviewed it because it's personal
 
-### Issue: "Access blocked: This app's request is invalid"
+#### Issue: "Access blocked: This app's request is invalid"
 
 **Solution:**
 - Make sure you enabled both Gmail API and Google Calendar API
 - Check that OAuth consent screen is configured
 - Verify you added yourself as a test user
 
-### Issue: "outlook_credentials.json not found"
+#### Issue: "outlook_credentials.json not found"
 
 **Solution:**
 - Copy the template: `cp outlook_credentials.json.template outlook_credentials.json`
 - Edit the file and add your Client ID from Azure Portal
 
-### Issue: Outlook authentication fails
+#### Issue: Outlook authentication fails
 
 **Solution:**
 - Verify redirect URI `http://localhost` is added in Authentication settings
 - Check that "Allow public client flows" is enabled
 - Ensure Mail.ReadWrite and Calendars.ReadWrite permissions are granted
 
-### Issue: "Invalid grant" or "Token expired"
+#### Issue: "Invalid grant" or "Token expired"
 
 **Solution:**
 - Delete the token files:
@@ -346,7 +448,7 @@ This will show what emails would be processed without actually changing anything
 
 ---
 
-## Next Steps
+### Legacy Workflow Next Steps
 
 Once authentication is working:
 
@@ -371,7 +473,7 @@ Once authentication is working:
 
 ---
 
-## Security Reminders
+### Legacy Workflow Security Reminders
 
 🔐 **Keep These Files Secret:**
 - `gmail_credentials.json`
@@ -386,7 +488,7 @@ Never share these files or commit them to git!
 
 ---
 
-## Need Help?
+### Need Help?
 
 Check the main README.md for:
 - Usage examples

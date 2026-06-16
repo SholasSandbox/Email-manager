@@ -2,335 +2,154 @@
 
 A Python utility to automatically manage Gmail and Outlook emails with intelligent filtering, archiving, and calendar integration.
 
-## Features
+## Current Recommended Workflow
 
-✨ **Automated Email Management:**
-- 🗑️ Delete promotional emails older than 30 days
-- 📧 Delete job alerts older than 7 days  
-- 📁 Archive job rejection emails
-- ⭐ Highlight important emails addressed directly to you
-- 📅 Create calendar reminders for important emails
+The most current and safest path in this repository is the dry-run CLI:
 
-🔒 **Safe by Default:**
-- Runs in dry-run mode by default (no changes made)
-- Moves emails to trash/deleted items instead of permanent deletion
-- Detailed logging of all actions
+```bash
+python3 -m email_core.run_daily_review
+```
 
-## Installation
+It supports:
 
-### 1. Install Python Dependencies
+- `--provider sample` for local fixture-backed testing
+- `--provider gmail` for Gmail metadata review using read-only OAuth access
+
+The Gmail dry-run CLI is intentionally limited:
+
+- Reads Gmail message metadata only
+- Does not modify labels or messages
+- Does not archive, trash, delete, send, or batch modify mail
+- Does not fetch full bodies or download attachments
+- Does not create calendar events
+- Always writes a Markdown report and JSONL audit log instead of changing the mailbox
+
+Outputs:
+
+- `reports/daily-review.md`
+- `runs/audit-log.jsonl`
+
+### Gmail Dry-Run Quick Start
+
+1. Install dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 2. Set Up Gmail Authentication
+2. Create a Google Cloud Desktop app OAuth client for the Gmail API and save the downloaded file as `gmail_credentials.json` in the project root.
 
-#### Create Google Cloud Project
-
-1. Go to [Google Cloud Console](https://console.cloud.google.com)
-2. Create a new project (or select existing)
-3. Enable APIs:
-   - Gmail API
-   - Google Calendar API
-4. Configure OAuth consent screen:
-   - User Type: External
-   - Add your email as test user
-5. Create credentials:
-   - Create Credentials → OAuth 2.0 Client ID
-   - Application type: Desktop app
-   - Name: "Email Manager" (or any name)
-6. Download credentials JSON file
-7. Save as `gmail_credentials.json` in the project directory
-
-#### Required Scopes
-The app requests these permissions:
-- `https://www.googleapis.com/auth/gmail.modify` - Read and modify emails
-- `https://www.googleapis.com/auth/calendar` - Create calendar events
-
-### 3. Set Up Outlook Authentication
-
-#### Register Azure AD Application
-
-1. Go to [Azure Portal](https://portal.azure.com)
-2. Navigate to Azure Active Directory → App registrations
-3. Click "New registration":
-   - Name: "Email Manager" (or any name)
-   - Supported account types: "Accounts in any organizational directory and personal Microsoft accounts"
-   - Redirect URI: Leave blank for now
-4. After creation, note the **Application (client) ID**
-5. Configure platform:
-   - Go to Authentication
-   - Add platform → Mobile and desktop applications
-   - Add redirect URI: `http://localhost`
-6. Configure API permissions:
-   - Add permission → Microsoft Graph → Delegated permissions
-   - Add: `Mail.ReadWrite`, `Calendars.ReadWrite`
-   - Grant admin consent (if required)
-7. Create `outlook_credentials.json`:
-
-```json
-{
-    "client_id": "your-application-client-id-here",
-    "authority": "https://login.microsoftonline.com/common"
-}
-```
-
-## Usage
-
-### First Run - Authentication Setup
+3. Run the dry-run CLI:
 
 ```bash
-# Setup Gmail only
-python email_manager.py --provider gmail --setup-only
-
-# Setup Outlook only
-python email_manager.py --provider outlook --setup-only
-
-# Setup both
-python email_manager.py --setup-only
+python3 -m email_core.run_daily_review \
+  --provider gmail \
+  --policy fixtures/sample_policy.json \
+  --report reports/daily-review.md \
+  --audit runs/audit-log.jsonl \
+  --max-results 20 \
+  --user-email your-email@example.com
 ```
 
-This will open your browser for OAuth authentication. After granting permissions, credentials are saved locally for future use.
+Optional Gmail flags:
 
-### Dry Run (Test Mode)
+- `--query "label:inbox"` to narrow the mailbox slice
+- `--user-id me` to target the default Gmail account
 
-**Recommended for first use** - Shows what would be done without making changes:
+The first Gmail run creates `gmail_readonly_token.pickle`, which is ignored by git.
+
+### Sample Dry-Run Quick Start
 
 ```bash
-# Process both Gmail and Outlook (dry run)
-python email_manager.py
-
-# Process only Gmail
-python email_manager.py --provider gmail
-
-# Process only Outlook
-python email_manager.py --provider outlook
+python3 -m email_core.run_daily_review \
+  --provider sample \
+  --emails fixtures/sample_emails.json \
+  --policy fixtures/sample_policy.json \
+  --report reports/daily-review.md \
+  --audit runs/audit-log.jsonl
 ```
 
-### Live Mode (Make Actual Changes)
+## Current Phase 2 Features
+
+The current `email_core.run_daily_review` path supports:
+
+- provider-neutral policy evaluation through `NormalizedEmail`
+- fixture-backed sample runs with `--provider sample`
+- Gmail metadata dry runs with `--provider gmail`
+- Markdown review output in `reports/daily-review.md`
+- JSONL audit output in `runs/audit-log.jsonl`
+- read-only Gmail OAuth using `gmail.readonly`
+
+## Safety Boundaries
+
+The current recommended workflow is intentionally limited:
+
+- no label changes
+- no archive, trash, delete, send, or batch modify actions
+- no full-body retrieval
+- no attachment downloads
+- no calendar creation
+- no Outlook integration in the Phase 2 CLI
+
+If you need setup details for the current Gmail dry-run path, use [SETUP_GUIDE.md](/Users/shola/Documents/Inbox Organiser/SETUP_GUIDE.md).
+
+## Current Project Layout
+
+```text
+email_core/
+  models.py              Provider-neutral email model
+  policy_loader.py       Policy parsing and loading
+  policy_engine.py       Policy evaluation
+  report_writer.py       Markdown report rendering
+  audit_log.py           JSONL audit rendering
+  gmail_adapter.py       Read-only Gmail metadata normalization
+  gmail_service.py       Read-only Gmail OAuth/service helper
+  run_daily_review.py    Current dry-run CLI entry point
+fixtures/
+  sample_emails.json
+  sample_policy.json
+tests/
+  test_models.py
+  test_policy_loader.py
+  test_policy_engine.py
+  test_report_writer.py
+  test_audit_log.py
+  test_gmail_adapter.py
+  test_gmail_service.py
+  test_run_daily_review.py
+```
+
+## Verification
+
+Run the current automated checks with:
 
 ```bash
-# Explicit authentication step (recommended before live runs)
-python email_manager.py --setup-only
-
-# Process both providers (make actual changes)
-python email_manager.py --live
-
-# Process only Gmail
-python email_manager.py --provider gmail --live
-
-# Process only Outlook  
-python email_manager.py --provider outlook --live
+python3 -m unittest discover -s tests
+python3 -m compileall email_core tests
 ```
 
-## How It Works
+## Archived Legacy Live Workflow
 
-### Authentication Flow
+This repository still contains older experimental/live-management code such as:
 
-#### Gmail (OAuth 2.0)
-1. First run opens browser for Google login
-2. Grants app permission to access Gmail and Calendar
-3. Token saved to `gmail_token.pickle` for future use
-4. Token auto-refreshes when expired
+- `email_manager.py`
+- `gmail_handler.py`
+- `outlook_handler.py`
 
-#### Outlook (OAuth 2.0 with MSAL)
-1. First run opens browser for Microsoft login
-2. Grants app permission to access Mail and Calendar
-3. Token cached by MSAL library
-4. Token auto-refreshes when expired
+That legacy path is not the recommended Phase 2 workflow.
 
-### Email Filtering Logic
+Important differences from the current dry-run CLI:
 
-#### Promotional Emails (30+ days old)
-- **Gmail**: Uses built-in `category:promotions` label
-- **Outlook**: Keyword matching on sender addresses:
-  - Contains: noreply, newsletter, marketing, promotions, offers, unsubscribe
+- it was designed around broader mailbox-management behavior
+- it includes Gmail modify/calendar concepts that do not apply to the current read-only CLI
+- it can imply live mailbox actions that are intentionally out of scope for Phase 2
 
-#### Job Alerts (7+ days old)
-- **Gmail**: Searches for:
-  - Subject/body: "job alert", "career opportunity", "new jobs", "job notification"
-  - From: linkedin.com, indeed.com, glassdoor.com
-- **Outlook**: Searches:
-  - Sender domains: linkedin.com, indeed.com, glassdoor.com, monster.com, careerbuilder.com
-  - Subject: "job alert", "career opportunity", "new jobs"
-
-#### Rejection Emails
-Archives emails containing phrases like:
-- "regret to inform"
-- "not moving forward"
-- "chosen to pursue other candidates"
-- "not been successful"
-- "position has been filled"
-
-#### Important Emails
-Identifies emails that are:
-- Received in last 7 days
-- Directly addressed to you (in To: field, max 2 recipients)
-- Not from no-reply addresses
-- Marked as important OR from real people
-
-### Calendar Integration
-
-For each important email, creates a calendar event:
-- **Title**: "📧 Read: [Email Subject]"
-- **When**: Tomorrow at 9:00 AM
-- **Duration**: 30 minutes
-- **Reminder**: 10 minutes before
-- **Description**: Sender information and reminder text
-
-## File Structure
-
-```
-email-manager/
-├── email_manager.py       # Main entry point
-├── gmail_handler.py       # Gmail-specific logic
-├── outlook_handler.py     # Outlook-specific logic
-├── requirements.txt       # Python dependencies
-├── gmail_credentials.json # Google OAuth credentials (you create)
-├── outlook_credentials.json # Azure AD credentials (you create)
-├── gmail_token.pickle     # Saved Gmail token (auto-created)
-└── email_manager.log      # Application logs
-```
-
-## Logging
-
-All actions are logged to:
-- Console (stdout)
-- `email_manager.log` file
-
-Log levels:
-- INFO: Normal operations, statistics
-- ERROR: Problems encountered
-- WARNING: Important notices
-
-## Customization
-
-### Modify Time Periods
-
-Edit the handlers to change retention periods:
-
-```python
-# In gmail_handler.py or outlook_handler.py
-
-# Change promotion deletion period (default: 30 days)
-cutoff_date = datetime.now() - timedelta(days=30)  # Change to 60, 90, etc.
-
-# Change job alert period (default: 7 days)
-cutoff_date = datetime.now() - timedelta(days=7)   # Change to 14, 30, etc.
-```
-
-### Add More Keywords
-
-Add to the keyword lists in handlers:
-
-```python
-# More job alert keywords
-job_keywords = [
-    'job alert',
-    'career opportunity',
-    'new jobs',
-    'your custom keyword here'  # Add your own
-]
-
-# More rejection phrases
-rejection_phrases = [
-    'regret to inform',
-    'not moving forward',
-    'your custom phrase here'  # Add your own
-]
-```
-
-### Adjust Important Email Criteria
-
-Modify `_find_important_emails()` and `_is_directly_addressed()` methods to change what's considered important.
-
-## Scheduling (Automation)
-
-### Linux/Mac (cron)
-
-Run daily at 8 AM:
-
-```bash
-# Edit crontab
-crontab -e
-
-# Add this line (adjust path to your script)
-0 8 * * * cd /path/to/email-manager && /usr/bin/python3 email_manager.py --live >> /path/to/logs/cron.log 2>&1
-```
-
-### Windows (Task Scheduler)
-
-1. Open Task Scheduler
-2. Create Basic Task
-3. Trigger: Daily at 8:00 AM
-4. Action: Start a program
-5. Program: `python`
-6. Arguments: `email_manager.py --live`
-7. Start in: `C:\path\to\email-manager`
-
-## Security Notes
-
-🔐 **Credential Storage:**
-- OAuth tokens stored locally in `gmail_token.pickle` and MSAL cache
-- Never share these files or commit to version control
-- Add to `.gitignore`:
-  ```
-  gmail_token.pickle
-  outlook_credentials.json
-  gmail_credentials.json
-  *.log
-  ```
-
-🔒 **Permissions:**
-- App only requests necessary permissions
-- You can revoke access anytime:
-  - Gmail: [Google Account Permissions](https://myaccount.google.com/permissions)
-  - Outlook: [Microsoft Account Apps](https://account.microsoft.com/privacy/app-access)
-
-## Troubleshooting
-
-### "gmail_credentials.json not found"
-- Download OAuth credentials from Google Cloud Console
-- Save in the same directory as the scripts
-
-### "outlook_credentials.json not found"
-- Create this file with your Azure AD client_id
-- See Outlook setup section above
-
-### Authentication fails
-- Check that APIs are enabled in Google Cloud Console
-- Verify redirect URIs are configured correctly
-- Make sure you granted all requested permissions
-
-### No emails found
-- Run in dry-run mode first to see what would be processed
-- Check log file for specific errors
-- Verify email filters match your email patterns
-
-### Rate limiting
-- Both APIs have rate limits
-- The app processes in batches to avoid hitting limits
-- Add delays between requests if needed
+If you need that historical context, treat it as archived reference material rather than the current product path.
 
 ## Contributing
 
-Feel free to customize this utility for your needs! Some ideas:
-- Add more email categories
-- Integrate with other email providers
-- Create a GUI interface
-- Add email analytics/reporting
-- Integrate with task management tools
+Changes that preserve the current dry-run, read-only safety model are the best fit for this repository’s current direction.
 
 ## License
 
-MIT License - Feel free to use and modify as needed!
-
-## Disclaimer
-
-⚠️ **Important**: 
-- Always test in dry-run mode first
-- This app permanently deletes/archives emails in live mode
-- Author not responsible for any data loss
-- Use at your own risk
-- Keep backups of important emails
+MIT License.

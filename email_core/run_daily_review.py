@@ -1,4 +1,4 @@
-"""Local dry-run CLI for fixture-backed policy evaluation."""
+"""Local dry-run CLI for sample fixtures or read-only Gmail metadata."""
 
 from __future__ import annotations
 
@@ -123,7 +123,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--live",
         action="store_true",
-        help="Rejected in Phase 2B. Live mailbox actions are not implemented.",
+        help="Rejected in Phase 2C. Live mailbox actions are not implemented.",
     )
     parser.add_argument(
         "--max-results",
@@ -147,12 +147,14 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     if args.live:
-        print("Error: live mode is not available in Phase 2B.", file=sys.stderr)
+        print("Error: live mode is not available in Phase 2C.", file=sys.stderr)
         return 2
 
     try:
         if args.provider == "sample" and not args.emails:
             raise ValueError("--emails is required when --provider sample is used.")
+        if args.provider == "gmail" and args.max_results < 1:
+            raise ValueError("--max-results must be at least 1 when --provider gmail is used.")
 
         gmail_service = None
         if args.provider == "gmail":
