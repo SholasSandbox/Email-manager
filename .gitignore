@@ -5,4 +5,5 @@ outlook_credentials.json
 outlook_token_cache.json
 venv/
 __pycache__/
-
+reports/
+runs/
