@@ -1,0 +1,55 @@
+[
+  {
+    "id": "sample-gmail-001",
+    "provider": "gmail",
+    "thread_id": "thread-gmail-001",
+    "subject": "Your weekly product update",
+    "sender": {
+      "name": "Example Updates",
+      "address": "updates@example.com"
+    },
+    "recipients": [
+      {
+        "name": "Shola",
+        "address": "shola@example.com"
+      }
+    ],
+    "received_at": "2026-06-15T09:30:00Z",
+    "snippet": "Here is what changed this week.",
+    "body_text": "Here is what changed this week.",
+    "labels": ["INBOX", "CATEGORY_UPDATES"],
+    "headers": {
+      "List-Id": "updates.example.com",
+      "From": "Example Updates <updates@example.com>"
+    },
+    "is_read": false,
+    "is_starred": false,
+    "importance": "normal"
+  },
+  {
+    "id": "sample-outlook-001",
+    "provider": "outlook",
+    "thread_id": "thread-outlook-001",
+    "subject": "Receipt for your order",
+    "sender": {
+      "name": "Example Store",
+      "address": "receipts@example-store.com"
+    },
+    "recipients": [
+      {
+        "name": "Shola",
+        "address": "shola@example.com"
+      }
+    ],
+    "received_at": "2026-05-20T14:15:00+01:00",
+    "snippet": "Thanks for your order.",
+    "body_text": "Thanks for your order.",
+    "categories": ["Receipts"],
+    "headers": {
+      "From": "Example Store <receipts@example-store.com>"
+    },
+    "is_read": true,
+    "is_starred": false,
+    "importance": "low"
+  }
+]

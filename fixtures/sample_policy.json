@@ -1,0 +1,42 @@
+{
+  "name": "sample-inbox-policy",
+  "version": "1.0",
+  "rules": [
+    {
+      "name": "archive-read-receipts",
+      "description": "Archive read receipt-like messages after they have been normalized.",
+      "criteria": {
+        "all": [
+          {"field": "subject", "contains_any": ["receipt", "invoice"]},
+          {"field": "is_read", "equals": true}
+        ]
+      },
+      "actions": [
+        {
+          "type": "archive",
+          "params": {
+            "reason": "read_receipt"
+          }
+        }
+      ]
+    },
+    {
+      "name": "label-newsletter-updates",
+      "description": "Label update/newsletter style messages without taking live mailbox action.",
+      "criteria": {
+        "any": [
+          {"field": "headers.list-id", "exists": true},
+          {"field": "labels", "contains": "CATEGORY_UPDATES"}
+        ]
+      },
+      "actions": [
+        {
+          "type": "label",
+          "params": {
+            "label": "Review/Updates"
+          }
+        }
+      ]
+    }
+  ]
+}
