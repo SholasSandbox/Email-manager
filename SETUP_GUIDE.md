@@ -29,6 +29,18 @@ It writes local outputs only:
 pip install -r requirements.txt
 ```
 
+For the current packaged/local-install path, you can also use editable installs:
+
+```bash
+python3 -m pip install -e .
+python3 -m pip install -e ".[gmail]"
+```
+
+Use:
+
+- `-e .` for the current sample-only dry-run CLI path
+- `-e ".[gmail]"` if you want Gmail read-only support in the packaged/local install
+
 Required Google packages already listed in `requirements.txt`:
 
 - `google-auth`
@@ -99,6 +111,25 @@ gmail_readonly_token.pickle
 ```
 
 The current Gmail CLI stays read-only after authentication and still only writes local report/audit output.
+
+### Local Invocation Options
+
+Once installed, the current Phase 2 CLI can be invoked as any of:
+
+```bash
+python3 -m email_core.run_daily_review --help
+python3 -m email_core --help
+email-review-dry-run --help
+```
+
+### Phase 2D Release-Readiness Notes
+
+The repository is now prepared for optional local packaging/readiness around the current safe CLI:
+
+- packaging metadata is centered on the dry-run path only
+- Gmail support is optional for packaged installs
+- legacy live-management code is not the packaged default workflow
+- no external package publication is part of this phase
 
 ## Archived Legacy Live Workflow
 

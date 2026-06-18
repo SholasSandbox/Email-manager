@@ -10,6 +10,12 @@ The most current and safest path in this repository is the dry-run CLI:
 python3 -m email_core.run_daily_review
 ```
 
+Phase 2D also prepares the current safe CLI for local packaging/readiness with:
+
+- `python3 -m email_core`
+- optional console script: `email-review-dry-run`
+- editable local install support via `pyproject.toml`
+
 It supports:
 
 - `--provider sample` for local fixture-backed testing
@@ -57,6 +63,33 @@ Optional Gmail flags:
 - `--user-id me` to target the default Gmail account
 
 The first Gmail run creates `gmail_readonly_token.pickle`, which is ignored by git.
+
+### Local Install / Packaging-Ready Quick Start
+
+Sample-only editable install:
+
+```bash
+python3 -m pip install -e .
+```
+
+Gmail-capable editable install:
+
+```bash
+python3 -m pip install -e ".[gmail]"
+```
+
+Safe local invocation options after install:
+
+```bash
+python3 -m email_core --help
+email-review-dry-run --help
+```
+
+Important note:
+
+- `requirements.txt` still exists for broader repository/dev usage
+- the new packaging metadata is centered on the current Phase 2 dry-run CLI
+- Gmail support is modeled as an optional install extra for the packaged path
 
 ### Sample Dry-Run Quick Start
 
@@ -126,6 +159,13 @@ Run the current automated checks with:
 ```bash
 python3 -m unittest discover -s tests
 python3 -m compileall email_core tests
+```
+
+Optional local packaging validation:
+
+```bash
+python3 -m pip install -e .
+python3 -m email_core --help
 ```
 
 ## Archived Legacy Live Workflow

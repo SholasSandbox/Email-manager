@@ -4,7 +4,11 @@ gmail_token.pickle
 gmail_readonly_token.pickle
 outlook_credentials.json
 outlook_token_cache.json
+.venv/
 venv/
 __pycache__/
+build/
+dist/
+*.egg-info/
 reports/
 runs/

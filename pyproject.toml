@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "email-review-dry-run"
+version = "0.1.0"
+description = "Read-only dry-run email review CLI for sample fixtures and Gmail metadata."
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+  {name = "Shola's Sandbox"}
+]
+keywords = ["email", "gmail", "dry-run", "read-only", "cli"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: End Users/Desktop",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Topic :: Communications :: Email",
+  "Topic :: Utilities"
+]
+dependencies = []
+
+[project.optional-dependencies]
+gmail = [
+  "google-auth==2.25.2",
+  "google-auth-oauthlib==1.2.0",
+  "google-auth-httplib2==0.2.0",
+  "google-api-python-client==2.111.0",
+]
+dev = [
+  "flask==3.0.0",
+  "flask-cors==4.0.0",
+  "msal==1.26.0",
+  "python-dateutil==2.8.2",
+  "requests==2.31.0",
+]
+
+[project.scripts]
+email-review-dry-run = "email_core.run_daily_review:main"
+
+[tool.setuptools]
+packages = ["email_core"]

@@ -123,7 +123,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--live",
         action="store_true",
-        help="Rejected in Phase 2C. Live mailbox actions are not implemented.",
+        help="Rejected in Phase 2D. Live mailbox actions are not implemented.",
     )
     parser.add_argument(
         "--max-results",
@@ -147,7 +147,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     if args.live:
-        print("Error: live mode is not available in Phase 2C.", file=sys.stderr)
+        print("Error: live mode is not available in Phase 2D.", file=sys.stderr)
         return 2
 
     try:
